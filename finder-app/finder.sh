@@ -1,27 +1,19 @@
 #!/bin/bash
 
-#check if both arguments are provided
-if [ $# -ne 2 ]; then
-	echo "Error: Two arguments are required."
-	echo "Usage: $0 <directory> <search dtring>"
-	exit 1;
+if [ $# -lt 2 ]; then
+    echo "Error - insufficient parameters passed in. Num parameters passed in: $#"
+    exit 1
 fi
 
-filesdir=$1
-searchstr=$2
+FILESDIR=$1
+SEARCHSTR=$2
 
-#check if input directory is valid
-if [ ! -d "$filesdir" ]
-then
-	echo "$filedir is not valid directory"
-	exit 1;
+if [ ! -d "$FILESDIR" ]; then
+    echo "Error - file directory does not exist"
+    exit 1
 fi
 
-#check if files directory is a directory and count them
-files_count=$(find "$filesdir" -type f | wc -l)
+num_files=$(find $FILESDIR/* | wc -l)
+num_files_matching_str=$(find $FILESDIR -type f -exec grep -o $SEARCHSTR {} + | wc -l)
 
-#find all matching lines in files and count them
-matching_lines_count=$(grep -r "$searchstr" "$filesdir" 2>/dev/null | wc -l)
-
-#print the result
-echo "The number of files are $files_count and the number of matching lines are $matching_lines_count"
+echo "The number of files are $num_files and the number of matching lines are $num_files_matching_str\n"
