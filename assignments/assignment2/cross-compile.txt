@@ -9,4 +9,3 @@ Configured with: /data/jenkins/workspace/GNU-toolchain/arm-13/src/gcc/configure 
 Thread model: posix
 Supported LTO compression algorithms: zlib
 gcc version 13.3.1 20240614 (Arm GNU Toolchain 13.3.Rel1 (Build arm-13.24))
-
