@@ -1,4 +1,10 @@
 #include "systemcalls.h"
+#include <sys/types.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <string.h>
 
 /**
  * @param cmd the command to execute with system()
@@ -9,6 +15,11 @@
 */
 bool do_system(const char *cmd)
 {
+    int ret = system(cmd);
+    if(ret == -1)
+    {
+        return false;
+    }
 
 /*
  * TODO  add your code here
@@ -61,6 +72,33 @@ bool do_exec(int count, ...)
 
     va_end(args);
 
+    pid_t pid = fork();
+    if(pid == -1){
+        perror("fork failed");
+        return false;
+    } else if (pid == 0){
+        // child process
+        execv(command[0], command);
+        perror("execv failed");
+        _exit(1); // exit child precess with error status
+    } else {
+        // parent process
+        int status;
+        if(waitpid(pid, &status, 0) == -1)
+        {
+            perror("waitpid failed");
+            return false;
+        }
+        if(WIFEXITED(status)) {
+            int exit_status = WEXITSTATUS(status);
+            if(exit_status != 0)
+            {
+                fprintf(stderr, "Command exited with status %d\n", exit_status);
+                return false;
+            }                
+        } 
+            
+    }
     return true;
 }
 
@@ -94,6 +132,45 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 */
 
     va_end(args);
+
+    pid_t pid = fork();
+
+    if(pid == -1) {
+        perror("fork failed");
+        return false;
+    } else if (pid == 0) {
+        // child process
+        int fd = open(outputfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if(fd == -1) {
+            perror("open failed");
+            _exit(1);
+        }
+        if(dup2(fd, STDOUT_FILENO) == -1) {
+            perror("dup2 failed");
+            _exit(1);
+        }
+        close(fd);
+        execv(command[0], command);
+        perror("execv failed");
+        _exit(1);
+    } else {
+        // parent process
+        int status;
+        if(waitpid(pid, &status, 0) == -1) {
+            perror("waitpid failed");
+            return false;
+        }
+        if(WIFEXITED(status)) {
+            int exit_status = WEXITSTATUS(status);
+            if(exit_status != 0) {
+                fprintf(stderr, "Command exited with status %d\n", exit_status);
+            }
+        } else if (WIFSIGNALED(status)) {
+            int signal = WTERMSIG(status);
+            fprintf(stderr, "Command terminated with signal %d\n", signal);
+            return false;
+        }
+    }
 
     return true;
 }
