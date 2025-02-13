@@ -14,16 +14,19 @@ int main(int argc, char **argv)
     if (argc < 3)
     {
         syslog(LOG_ERR, "Error - insufficient parameters passed in. Num parameters passed in: %d", argc);
+        closelog();
         return 1;
     }
 
     if ((ptr = fopen(filename, "w")) == NULL)
     {
         syslog(LOG_ERR, "Could not create file %s", filename);
+        closelog();
         return 1;
     }
 
     syslog(LOG_DEBUG, "Writing %s to %s", writestr, filename);
+    closelog();
     fprintf(ptr, "%s", writestr);
 
     return 0;
