@@ -36,7 +36,7 @@ if [ ! -e ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ]; then
 
     # TODO: Add your kernel build steps here
     echo "building kernel"
-    make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} mrproper
+    # make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} mrproper
     make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} defconfig
     make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} all -j6
     make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} modules -j6
@@ -101,19 +101,26 @@ sudo mknod -m 600 dev/console c 5 1
 # TODO: Clean and build the writer utility
 echo "Building the writer utility"
 cd ${FINDER_APP_DIR}
-make clean -j6
-make -j6
+make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} clean -j6
+make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} -j6
 
 # TODO: Copy the finder related scripts and executables to the /home directory
 # on the target rootfs
 echo "Copying finder related scripts and executables to the /home directory"
-cp -a ${FINDER_APP_DIR}/finder.sh ${OUTDIR}/rootfs/home
 cp -rL ${FINDER_APP_DIR}/../conf/username.txt ${OUTDIR}/rootfs/home/conf
 cp -rL ${FINDER_APP_DIR}/../conf/assignment.txt ${OUTDIR}/rootfs/home/conf
-cp -a ${FINDER_APP_DIR}/finder.sh ${OUTDIR}/rootfs/home
-cp -a ${FINDER_APP_DIR}/finder-test.sh ${OUTDIR}/rootfs/home
-cp -a ${FINDER_APP_DIR}/finder.sh ${OUTDIR}/rootfs/home
-cp -a ${FINDER_APP_DIR}/autorun-qemu.sh ${OUTDIR}/rootfs/home
+cp -rL ${FINDER_APP_DIR}/writer.c ${OUTDIR}/rootfs/home
+cp -rL ${FINDER_APP_DIR}/writer ${OUTDIR}/rootfs/home
+ls -l ${OUTDIR}/rootfs/home/writer #verify writer copy
+chmod a+x ${OUTDIR}/rootfs/home/writer #verify writer permissions.
+cp -rL ${FINDER_APP_DIR}/Makefile ${OUTDIR}/rootfs/home
+cp -rL ${FINDER_APP_DIR}/writer.sh ${OUTDIR}/rootfs/home
+cp -rL ${FINDER_APP_DIR}/finder.sh ${OUTDIR}/rootfs/home
+cp -rL ${FINDER_APP_DIR}/finder-test.sh ${OUTDIR}/rootfs/home
+cp -rL ${FINDER_APP_DIR}/finder.sh ${OUTDIR}/rootfs/home
+ls -l ${OUTDIR}/rootfs/home/finder.sh #verify finder copy
+chmod a+x ${OUTDIR}/rootfs/home/finder.sh #verify finder permissions.
+cp -rL ${FINDER_APP_DIR}/autorun-qemu.sh ${OUTDIR}/rootfs/home
 
 # TODO: Chown the root directory
 echo "Chown the root directory"
